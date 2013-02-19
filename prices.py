@@ -128,7 +128,7 @@ def process_data(filename, compact=1):
 
 	prefix = 'prices_data = '
 
-	filename = filename.rsplit('.', 1)[0] + '.' + ['.json', '.compact.json'][compact]
+	filename = filename.rsplit('.', 1)[0] + ['.json', '.compact.json'][compact]
 	with open(filename, 'w') as f: f.write(prefix + content)
 
 

@@ -230,8 +230,8 @@ Zurich 119.1 120.3 110.6
 
 
 
-time_to_buy,Working time to buy
-City;bigmac,1 Big Mac (minute);bread,1kg of bread (minute);rice,1kg rice (minute);iphone,iPhone 4S 16GB (hours)
+time_to_buy,Working time to buy (minutes)
+City;bigmac,1 Big Mac;bread,1kg of bread;rice,1kg rice;iphone,iPhone 4S (hours)
 Amsterdam 16 7 9 44.5
 Athens 30 13 26 86.0
 Auckland 16 17 8 51.0

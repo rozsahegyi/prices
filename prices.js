@@ -3,57 +3,78 @@
 	function Prices() {
 
 		this.init = function() {
-			(function() {
-				this.data = window.prices_data;
-				window.prices_data = [];
 
-				this.canvas = $('charts').getContext('2d');
-				this.window_resize = Event.on(window, 'resize', function() { window.prices.lazy_refresh(); })
-				$('charts').on('click', function(e) { prices.onclick(e); } );
+			this.data = window.prices_data;
+			window.prices_data = [];
+
+			this.canvas = $('charts').getContext('2d');
+			this.window_resize = Event.on(window, 'resize', function() { window.prices.lazy_refresh(); })
+			$('charts').on('click', function(e) { prices.onclick(e); } );
 
 
-				var highlight = 'Beijing,Budapest,London,Moscow,Mumbai,New York,Sydney,Tokyo,Zurich'
-				var colors = 'e00000,e0e000,00ff00'
+			var highlight = 'Beijing,Budapest,London,New York,Sydney,Tokyo,Zurich'
+			var colors = 'e00000,e0e000,00ff00'
 
-				this.state = {
-					charts: [], 
-					default_charts: [0, 1], 
-					sort_index: 1, 
-					highlight: {}, 
-					colormap: [], 
-					background: '#111', 
-					textcolor: '#fff', 
-					metrics: {
-						canvas: { x: 600, y: 600, mx: 1200, my: 750 }, 
-						base: { x: 5, y: 0 }, 
-						text: { x: 2, y: 3 }, 
-						chart_width: 120, 
-						name_height: 15, 
-						field_height: 15, 
-						stepy: 10, 
-						stepy_lowest: 5
-					}, 
-					update: function(items) { for (var k in items) this[k] = items[k]; return this; }
+			var set_highlights = function(x) { var res = {}; x.split(',').each(function(a) { res[a] = 1; }); return res; }
+			var set_colors = 
+
+			this.state = {
+				update: function(items) { for (var k in items) this[k] = items[k]; return this; }, 
+
+				charts: [], 
+				default_charts: [0, 1], 
+				sort_index: 1, 
+				highlight: set_highlights(highlight), 
+				colormap: colors.split(',').map(function(a) { return a.match(/.{2}/g).map(function(b) { return parseInt(b, 16); }); }), 
+				background: '#111', 
+				textcolor: '#fff', 
+
+				// charts where color map should be reverted (any charts with costs)
+				chart_properties: {
+					'prices': 1, 
+					'time_to_buy': 1, 
+					'monthly_costs': 1, 
+					'food': 1, 
+					'clothing': 1, 
+					'electronics': 1, 
+					// this chart has several extremely high values which flatten regular values, so set custom scaling
+					'rents': { max: 7000, max_exclude: {'local_prices': 1} }, 
+					'transport': 1, 
+					'cars': 1, 
+					'restaurants': 1, 
+					'city_break': 1, 
+					'services': 1, 
+					'taxes': 1, 
+					'exchange_rates': 1, 
+					'inflation': 1
+				}, 
+
+				metrics: {
+					canvas: { x: 600, y: 600, mx: 1200, my: 750 }, 
+					base: { x: 5, y: 0 }, 
+					text: { x: 2, y: 3 }, 
+					chart_width: 120, 
+					name_height: 15, 
+					field_height: 15, 
+					stepy: 10, 
+					stepy_lowest: 5
 				}
+			}
 
-				highlight.split(',').each(function(a) { this.highlight[a] = 1; }, this.state)
-				this.state.colormap = colors.split(',').map(function(a) { return a.match(/.{2}/g).map(function(b) { return parseInt(b, 16); }); })
+			this.setup_chart_list()
+			this.lazy_refresh(50)
 
-				this.setup_chart_list()
-				this.lazy_refresh(50)
-
-			}).apply(window.prices)
 		}
 
 		this.refresh = function() {
 			var start = new Date(), 
-				canvas = $('charts'), 
 				size = this.state.metrics.canvas, 
-				stepy, x = canvas.offsetLeft, y = canvas.offsetTop
+				canvas = $('charts'), 
+				x = canvas.offsetLeft, y = canvas.offsetTop, stepy
 
 			// available width, assuming a centered canvas
 			canvas.width = size.w = Math.max(size.x, document.viewport.getWidth() - x * 2)
-			// available height, minus a constant 5 to avoid scrolling
+			// available height, minus a constant 5 to avoid scrolling (chrome)
 			canvas.height = size.h = Math.max(size.y, document.viewport.getHeight() - y - 5)
 			// less height than ideal? adjust stepy
 			stepy = canvas.height < this.state.metrics.canvas.my ? this.int(10 * canvas.height / this.state.metrics.canvas.my) : 10
@@ -76,6 +97,7 @@
 		}
 
 		this.click_handlers = [
+			// click on lines
 			function (event, p, m) {
 				var range = m.base.y + m.name_height + m.field_height + m.stepy * 0.5
 				if (p.y < range) return false
@@ -85,6 +107,7 @@
 				this.lazy_refresh(10)
 				return true
 			}, 
+			// click on column headers
 			function (event, p, m) {
 				var range = [m.base.y + m.text.y + m.name_height, m.field_height]
 				if (p.y < range[0] || p.y > range[0] + range[1]) return false
@@ -161,8 +184,18 @@
 			var isnumber = function(x) { return !isNaN(parseInt(x, 10)); }
 			var getmax = function(list, k) { return $A(list.map(function(x) { return x[k]; })).max(); }
 
-			var display_name = function(el, i) { this.p.label.apply(this.p, [tx + this.c * width, ty, el[2]]) || (this.c += el[0]); }
-			var display_field = function(el, i) { this.label(tx + i * width, ty + m.name_height, el[2]); }
+			var display_name = function(el, i) {
+				this.p.label.apply(this.p, [tx + this.c * width, ty, el[2]]);
+				this.c += el[0]
+			}
+
+			var display_field = function(el, i) {
+				var x = i * width, y = m.name_height
+				this.canvas.fillStyle = this.state.background
+				this.canvas.fillRect(bx + x, by + y, m.text.x * 2 + this.canvas.measureText(el[2]).width, m.text.y + m.stepy + 6)
+				this.label(tx + x, ty + y, el[2]);
+			}
+
 			var display_city = function(el, i) {
 				var by = m.base.y + m.name_height + m.field_height
 				var highlighted = this.state.highlight[el[0]]
@@ -173,7 +206,6 @@
 			}
 
 			var display_value = function(el, i) {
-				// this.p.debug(el[this.index])
 				var value = el[this.index], 
 					mark = this.p.state.highlight[el[0]], 
 					color = this.p.color_map(colormap, this.reverse ? -value : value, this.max), 
@@ -196,32 +228,18 @@
 			fields.each(display_field, this)
 			data.each(display_city, this)
 
-			var field, props, properties = {
-				'prices': 1, 
-				'time_to_buy': 1, 
-				'monthly_costs': 1, 
-				'food': 1, 
-				'clothing': 1, 
-				'electronics': 1, 
-				'rents': { max: 7000, max_exclude: {'local_prices': 1} }, 
-				'transport': 1, 
-				'cars': 1, 
-				'restaurants': 1, 
-				'city_break': 1, 
-				'services': 1, 
-				'taxes': 1, 
-				'exchange_rates': 1, 
-				'inflation': 1
-			}
+			var props
 
 			for (var k = 1; k < fields.length; k++) {
 				if (k * m.chart_width > m.canvas.w) break // render only visible columns
-				props = properties[fields[k][0]] || { reverse: 0 }
+				props = this.state.chart_properties[fields[k][0]] || { reverse: 0 }
 				if (typeof props !== 'object') props = {}
 				context = {
 					p: this, 
 					index: k, 
+					// get max value for number-type columns (if a max is defined in props, use that)
 					max: (tmp = isnumber(data[0][k])) ? (props.max && !props.max_exclude[fields[k][1]] ? props.max : getmax(data, k)) : 0, 
+					// 
 					bx: m.base.x + k * width, 
 					by: m.base.y + m.name_height + m.field_height + (tmp ? m.stepy : 0), 
 					reverse: props.reverse === undefined || props.reverse
@@ -298,7 +316,7 @@
 		}
 
 		this.label = function(x, y, text, color) {
-			if (color) this.canvas.fillStyle = color[0] === '#' ? color : '#' + color
+			this.canvas.fillStyle = color ? (color[0] === '#' ? color : '#' + color) : this.state.textcolor
 			this.canvas.fillText(text, x, y)
 		}
 
@@ -386,7 +404,7 @@
 
 		this.debug = function(stuff) { console.log(stuff); }
 
-		document.observe("dom:loaded", this.init);
+		document.observe("dom:loaded", function() { window.prices.init(); });
 
 	}
 
