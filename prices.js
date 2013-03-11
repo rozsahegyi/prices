@@ -7,9 +7,9 @@
 			this.data = window.prices_data;
 			window.prices_data = [];
 
-			this.canvas = $('charts').getContext('2d');
+			this.canvas = $('canvas').getContext('2d');
 			this.window_resize = Event.on(window, 'resize', function() { window.prices.lazy_refresh(); })
-			$('charts').on('click', function(e) { prices.onclick(e); } );
+			$('canvas').on('click', function(e) { prices.onclick(e); } );
 
 
 			var highlight = 'Beijing,Budapest,London,New York,Sydney,Tokyo,Zurich'
@@ -69,11 +69,11 @@
 		this.refresh = function() {
 			var start = new Date(), 
 				size = this.state.metrics.canvas, 
-				canvas = $('charts'), 
+				canvas = $('canvas'), 
 				x = canvas.offsetLeft, y = canvas.offsetTop, stepy
 
 			// available width, assuming a centered canvas
-			canvas.width = size.w = Math.max(size.x, document.viewport.getWidth() - x * 2)
+			canvas.width = size.w = Math.max(size.x, document.viewport.getWidth() - x - 2)
 			// available height, minus a constant 5 to avoid scrolling (chrome)
 			canvas.height = size.h = Math.max(size.y, document.viewport.getHeight() - y - 5)
 			// less height than ideal? adjust stepy
