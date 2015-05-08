@@ -1,6 +1,4 @@
 
-html { font: 10px verdana; }
-
 body {
 	-webkit-touch-callout: none;
 	-webkit-user-select: none;
@@ -10,35 +8,38 @@ body {
 	user-select: none;
 }
 
-#prices {
-	margin: 0px; padding: 0px; background: #060606; font-size: 100%; overflow: auto;
+html			{ font: 10px verdana; }
+body			{ margin: 0px; padding: 0px; background: #060606; font-size: 100%; overflow: auto; }
 
-	h1					{ font-size: 170%; color: #fff; margin: 5px 0px; }
-	h2					{ font-size: 120%; color: #fff; }
-	input				{ padding: 1px 3px; border: none; background: #363636; color: #fff; text-align: center; }
-	p					{ padding-left: 5px; font-size: 120%; 
-		span			{ margin-bottom: 5px; display: block; }
-		b.grid			{ margin-left: 10px; }
-		input			{ width: 40px; height: 14px; margin: 2px 5px 2px 2px; font-size: 100%; }
-		input#p, 
-		input#c			{ width: 30px; }
+#main			{ width: 100%; height: 40px; background: #222; color: #dddddd;
+	> *			{ display: inline-block; xvertical-align: baseline; }
+	h1, span, #charts :first-child
+				{ height: 20px; margin: 0px; padding: 10px 20px; font-size: 150%; }
+	h1			{ width: 180px; background: #444; color: #f6f6f6; font-size: 160%; }
+	a			{ color: #dddddd; font-weight: bold; text-decoration: none; }
+	a:hover,
+	a:focus		{ color: #fff; text-decoration: underline; outline: none; }
+
+	#charts		{ position: absolute; top: 0; right: 0; width: 140px; height: 40px; overflow: hidden;
+		&:hover { overflow: visible; }
+		.active	{ background: #444; color: #fff; }
+		:hover	{ background: #fff; color: #111; cursor: pointer; }
+		div		{ width: 370px; height: 15px; padding: 2px 5px; position: relative; left: -240px; font-size: 120%; background: #222; }
+		:first-child
+				{ width: 100px; left: 0px; background: #444; color: #ddd; cursor: default; text-align: center; }
 	}
-	a					{ color: #fff; border-bottom: 1px dotted #999; text-decoration: none; }
-	a.wiki-help			{ float: right; }
+}
 
-	#main				{ position: absolute; width: 300px; height: auto; padding: 5px; background: #222; color: #dddddd; }
-	#canvas				{ margin: 0px; border-left: 1px solid #666; margin-left: 320px; padding: 0px; background: #060606; }
+#canvas			{ margin: 0px; padding: 0px; background: #060606; }
 
-	#chart_list			{ padding: 0px; overflow: hidden; position: relative; z-index: 1; background: #111; color: #ccc; 
-		div				{ height: 18px; padding: 2px 5px; padding-bottom: 0px; }
-		.active			{ background: #666; color: #fff; }
-		:hover			{ background: #fff; color: #111; cursor: pointer; }
-		:first-child	{ background: #111; color: #999; cursor: default; xtext-align: center; }
-		&:hover 		{ height: auto; }
-	}
-
-	#header > div		{ height: 20px; margin-right: 2px; padding: 2px 2px 0px; display: inline-block; vertical-align: top; background: #333; color: #999; }
-	#header				{ height: 20px; margin-bottom: 2px; position: relative; overflow: visible;
-	}
-
+@media (max-width: 860px) {
+	#main span	{ font-size: 120%; }
+}
+@media (max-width: 760px) {
+	#main		{ height: 80px; }
+	#main h1	{ width: auto; display: block; }
+	#main span	{ font-size: 150%; }
+}
+@media (max-width: 599px) {
+	#main span	{ font-size: 120%; padding-top: 12px; }
 }
